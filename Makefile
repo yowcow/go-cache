@@ -6,3 +6,4 @@ all:
 
 test:
 	gom test ./lrucache -v
+	gom test ./fifocache -v
