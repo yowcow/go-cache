@@ -37,7 +37,12 @@ func New(maxSize int64) LRUCacher {
 }
 
 func NewNode(key string, val interface{}) *LRUCacheNode {
-	return &LRUCacheNode{key, val, nil, nil}
+	return &LRUCacheNode{
+		key:  key,
+		val:  val,
+		prev: nil,
+		next: nil,
+	}
 }
 
 func (self *LRUCache) MaxSize() int64 {
