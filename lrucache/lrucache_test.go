@@ -1,37 +1,32 @@
-package mycache
+package lrucache
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestNew(t *testing.T) {
-	cache := NewLRUCache(5)
+	assert := assert.New(t)
 
-	if cache.MaxSize() != 5 {
-		t.Error("Expected be 5 but got", cache.MaxSize())
-	}
+	cache := New(5)
 
-	if cache.CurrentSize() != 0 {
-		t.Error("Expected 0 but got", cache.MaxSize())
-	}
-
-	if len := len(cache.GetAllKeys()); len != 0 {
-		t.Error("Expected no keys but got", len)
-	}
+	assert.Equal(int64(5), cache.MaxSize())
+	assert.Equal(int64(0), cache.CurrentSize())
+	assert.True(assert.EqualValues([]string{}, cache.AllKeys()))
 }
 
 func TestAddNode(t *testing.T) {
-	cache := NewLRUCache(3)
-	cache.AddNode(NewLRUCacheNode("hoge", 111))
-	cache.AddNode(NewLRUCacheNode("fuga", 222))
-	cache.AddNode(NewLRUCacheNode("fooo", 333))
+	cache := New(3)
+	cache.AddNode(NewNode("hoge", 111))
+	cache.AddNode(NewNode("fuga", 222))
+	cache.AddNode(NewNode("fooo", 333))
 
 	if size := cache.CurrentSize(); size != 3 {
 		t.Error("Expected 3 but got", size)
 	}
 
-	keys1 := cache.GetAllKeys()
-	keys2 := cache.GetAllKeysReversed()
+	keys1 := cache.AllKeys()
+	keys2 := cache.AllKeysReversed()
 
 	if keys1[0] != keys2[2] {
 		t.Error("Expected equal but got", keys1[0], keys2[2])
@@ -45,12 +40,12 @@ func TestAddNode(t *testing.T) {
 }
 
 func TestRemoveNode(t *testing.T) {
-	n1 := NewLRUCacheNode("hoge", 111)
-	n2 := NewLRUCacheNode("fuga", 222)
-	n3 := NewLRUCacheNode("fooo", 333)
-	n4 := NewLRUCacheNode("baar", 444)
+	n1 := NewNode("hoge", 111)
+	n2 := NewNode("fuga", 222)
+	n3 := NewNode("fooo", 333)
+	n4 := NewNode("baar", 444)
 
-	cache := NewLRUCache(4)
+	cache := New(4)
 	cache.AddNode(n1)
 	cache.AddNode(n2)
 	cache.AddNode(n3)
@@ -66,8 +61,8 @@ func TestRemoveNode(t *testing.T) {
 		t.Error("Expected 3 but got", size)
 	}
 
-	keys1 := cache.GetAllKeys()
-	keys2 := cache.GetAllKeysReversed()
+	keys1 := cache.AllKeys()
+	keys2 := cache.AllKeysReversed()
 
 	if keys1[0] != keys2[2] {
 		t.Error("Expected equal but got", keys1[0], keys2[2])
@@ -85,8 +80,8 @@ func TestRemoveNode(t *testing.T) {
 		t.Error("Expected 2 but got", size)
 	}
 
-	keys1 = cache.GetAllKeys()
-	keys2 = cache.GetAllKeysReversed()
+	keys1 = cache.AllKeys()
+	keys2 = cache.AllKeysReversed()
 
 	if keys1[0] != keys2[1] {
 		t.Error("Expected equal but got", keys1[0], keys2[1])
@@ -101,8 +96,8 @@ func TestRemoveNode(t *testing.T) {
 		t.Error("Expected 1 but got", size)
 	}
 
-	keys1 = cache.GetAllKeys()
-	keys2 = cache.GetAllKeysReversed()
+	keys1 = cache.AllKeys()
+	keys2 = cache.AllKeysReversed()
 
 	if keys1[0] != keys2[0] {
 		t.Error("Expected equal but got", keys1[0], keys2[0])
@@ -114,8 +109,8 @@ func TestRemoveNode(t *testing.T) {
 		t.Error("Expected 0 but got", size)
 	}
 
-	keys1 = cache.GetAllKeys()
-	keys2 = cache.GetAllKeysReversed()
+	keys1 = cache.AllKeys()
+	keys2 = cache.AllKeysReversed()
 
 	if len(keys1) != 0 {
 		t.Error("Expected no keys but got", keys1)
@@ -126,7 +121,7 @@ func TestRemoveNode(t *testing.T) {
 }
 
 func TestSet(t *testing.T) {
-	cache := NewLRUCache(3)
+	cache := New(3)
 	cache.Set("hoge", 111)
 	cache.Set("fuga", 222)
 	cache.Set("fooo", 333)
@@ -177,7 +172,7 @@ func TestSet(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	cache := NewLRUCache(3)
+	cache := New(3)
 	cache.Set("hoge", 111)
 	cache.Set("fuga", 222)
 	cache.Set("fooo", 333)
@@ -232,7 +227,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	cache := NewLRUCache(3)
+	cache := New(3)
 	cache.Set("hoge", 111)
 	cache.Set("fuga", 222)
 	cache.Set("fooo", 333)

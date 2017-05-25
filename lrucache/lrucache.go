@@ -1,4 +1,4 @@
-package mycache
+package lrucache
 
 import (
 	"fmt"
@@ -22,8 +22,8 @@ type LRUCache struct {
 type LRUCacheInterface interface {
 	MaxSize() int64
 	CurrentSize() int64
-	GetAllKeys() []string
-	GetAllKeysReversed() []string
+	AllKeys() []string
+	AllKeysReversed() []string
 	AddNode(*LRUCacheNode)
 	RemoveNode(*LRUCacheNode)
 	Set(string, interface{}) error
@@ -31,7 +31,7 @@ type LRUCacheInterface interface {
 	Delete(string) error
 }
 
-func NewLRUCache(maxSize int64) LRUCacheInterface {
+func New(maxSize int64) LRUCacheInterface {
 	return &LRUCache{
 		maxSize:     maxSize,
 		currentSize: 0,
@@ -41,7 +41,7 @@ func NewLRUCache(maxSize int64) LRUCacheInterface {
 	}
 }
 
-func NewLRUCacheNode(key string, val interface{}) *LRUCacheNode {
+func NewNode(key string, val interface{}) *LRUCacheNode {
 	return &LRUCacheNode{key, val, nil, nil}
 }
 
@@ -53,7 +53,7 @@ func (self *LRUCache) CurrentSize() int64 {
 	return self.currentSize
 }
 
-func (self *LRUCache) GetAllKeys() []string {
+func (self *LRUCache) AllKeys() []string {
 	node := self.head
 	result := []string{}
 	for node != nil {
@@ -63,7 +63,7 @@ func (self *LRUCache) GetAllKeys() []string {
 	return result
 }
 
-func (self *LRUCache) GetAllKeysReversed() []string {
+func (self *LRUCache) AllKeysReversed() []string {
 	node := self.tail
 	result := []string{}
 	for node != nil {
@@ -117,7 +117,7 @@ func (self *LRUCache) Set(key string, val interface{}) error {
 			head := self.head
 			self.Delete(head.key)
 		}
-		node = NewLRUCacheNode(key, val)
+		node = NewNode(key, val)
 		self.AddNode(node)
 		self.keyMap[key] = node
 	}

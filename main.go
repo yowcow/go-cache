@@ -1,7 +1,8 @@
-package mycache
+package main
 
-import "fmt"
+import (
+	_ "github.com/yowcow/go-cache/lrucache"
+)
 
 func main() {
-	fmt.Println("vim-go")
 }
