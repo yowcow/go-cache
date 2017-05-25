@@ -17,9 +17,9 @@ func TestNew(t *testing.T) {
 
 func TestAddNode(t *testing.T) {
 	cache := New(3)
-	cache.AddNode(NewNode("hoge", 111))
-	cache.AddNode(NewNode("fuga", 222))
-	cache.AddNode(NewNode("fooo", 333))
+	cache.addNode(NewNode("hoge", 111))
+	cache.addNode(NewNode("fuga", 222))
+	cache.addNode(NewNode("fooo", 333))
 
 	if size := cache.CurrentSize(); size != 3 {
 		t.Error("Expected 3 but got", size)
@@ -46,16 +46,16 @@ func TestRemoveNode(t *testing.T) {
 	n4 := NewNode("baar", 444)
 
 	cache := New(4)
-	cache.AddNode(n1)
-	cache.AddNode(n2)
-	cache.AddNode(n3)
-	cache.AddNode(n4)
+	cache.addNode(n1)
+	cache.addNode(n2)
+	cache.addNode(n3)
+	cache.addNode(n4)
 
 	if size := cache.CurrentSize(); size != 4 {
 		t.Error("Expected 4 but got", size)
 	}
 
-	cache.RemoveNode(n2)
+	cache.removeNode(n2)
 
 	if size := cache.CurrentSize(); size != 3 {
 		t.Error("Expected 3 but got", size)
@@ -74,7 +74,7 @@ func TestRemoveNode(t *testing.T) {
 		t.Error("Expected equal but got", keys1[2], keys2[0])
 	}
 
-	cache.RemoveNode(n1)
+	cache.removeNode(n1)
 
 	if size := cache.CurrentSize(); size != 2 {
 		t.Error("Expected 2 but got", size)
@@ -90,7 +90,7 @@ func TestRemoveNode(t *testing.T) {
 		t.Error("Expected equal but got", keys1[1], keys2[0])
 	}
 
-	cache.RemoveNode(n4)
+	cache.removeNode(n4)
 
 	if size := cache.CurrentSize(); size != 1 {
 		t.Error("Expected 1 but got", size)
@@ -103,7 +103,7 @@ func TestRemoveNode(t *testing.T) {
 		t.Error("Expected equal but got", keys1[0], keys2[0])
 	}
 
-	cache.RemoveNode(n3)
+	cache.removeNode(n3)
 
 	if size := cache.CurrentSize(); size != 0 {
 		t.Error("Expected 0 but got", size)

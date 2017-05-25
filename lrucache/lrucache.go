@@ -2,6 +2,7 @@ package lrucache
 
 import (
 	"fmt"
+	"github.com/yowcow/go-cache/cache"
 )
 
 type LRUCacheNode struct {
@@ -19,19 +20,13 @@ type LRUCache struct {
 	keyMap      map[string]*LRUCacheNode
 }
 
-type LRUCacheInterface interface {
-	MaxSize() int64
-	CurrentSize() int64
-	AllKeys() []string
-	AllKeysReversed() []string
-	AddNode(*LRUCacheNode)
-	RemoveNode(*LRUCacheNode)
-	Set(string, interface{}) error
-	Get(string) (interface{}, error)
-	Delete(string) error
+type LRUCacher interface {
+	cache.Cacher
+	addNode(*LRUCacheNode)
+	removeNode(*LRUCacheNode)
 }
 
-func New(maxSize int64) LRUCacheInterface {
+func New(maxSize int64) LRUCacher {
 	return &LRUCache{
 		maxSize:     maxSize,
 		currentSize: 0,
@@ -73,7 +68,43 @@ func (self *LRUCache) AllKeysReversed() []string {
 	return result
 }
 
-func (self *LRUCache) AddNode(node *LRUCacheNode) {
+func (self *LRUCache) Set(key string, val interface{}) error {
+	if node := self.keyMap[key]; node != nil { // Existing key
+		self.removeNode(node)
+		self.addNode(node)
+	} else { // New key
+		if self.CurrentSize() == self.MaxSize() {
+			head := self.head
+			self.Delete(head.key)
+		}
+		node = NewNode(key, val)
+		self.addNode(node)
+		self.keyMap[key] = node
+	}
+	return nil
+}
+
+func (self *LRUCache) Get(key string) (interface{}, error) {
+	if node := self.keyMap[key]; node != nil {
+		if node != self.tail { // The node is not the tail
+			self.removeNode(node)
+			self.addNode(node)
+		}
+		return node.val, nil
+	}
+	return nil, fmt.Errorf("Key %s does not exist", key)
+}
+
+func (self *LRUCache) Delete(key string) error {
+	if node := self.keyMap[key]; node != nil {
+		self.removeNode(node)
+		delete(self.keyMap, key)
+		return nil
+	}
+	return fmt.Errorf("Key %s does not exist", key)
+}
+
+func (self *LRUCache) addNode(node *LRUCacheNode) {
 	if tail := self.tail; tail != nil {
 		tail.next = node
 		node.prev = tail
@@ -86,7 +117,7 @@ func (self *LRUCache) AddNode(node *LRUCacheNode) {
 	self.currentSize += 1
 }
 
-func (self *LRUCache) RemoveNode(node *LRUCacheNode) {
+func (self *LRUCache) removeNode(node *LRUCacheNode) {
 	if node == self.head && node == self.tail { // Removing the last node
 		self.head = nil
 		self.tail = nil
@@ -106,40 +137,4 @@ func (self *LRUCache) RemoveNode(node *LRUCacheNode) {
 	}
 
 	self.currentSize -= 1
-}
-
-func (self *LRUCache) Set(key string, val interface{}) error {
-	if node := self.keyMap[key]; node != nil { // Existing key
-		self.RemoveNode(node)
-		self.AddNode(node)
-	} else { // New key
-		if self.CurrentSize() == self.MaxSize() {
-			head := self.head
-			self.Delete(head.key)
-		}
-		node = NewNode(key, val)
-		self.AddNode(node)
-		self.keyMap[key] = node
-	}
-	return nil
-}
-
-func (self *LRUCache) Get(key string) (interface{}, error) {
-	if node := self.keyMap[key]; node != nil {
-		if node != self.tail { // The node is not the tail
-			self.RemoveNode(node)
-			self.AddNode(node)
-		}
-		return node.val, nil
-	}
-	return nil, fmt.Errorf("Key %s does not exist", key)
-}
-
-func (self *LRUCache) Delete(key string) error {
-	if node := self.keyMap[key]; node != nil {
-		self.RemoveNode(node)
-		delete(self.keyMap, key)
-		return nil
-	}
-	return fmt.Errorf("Key %s does not exist", key)
 }
