@@ -70,6 +70,7 @@ func (self *LRUCache) AllKeysReversed() []string {
 
 func (self *LRUCache) Set(key string, val interface{}) error {
 	if node := self.keyMap[key]; node != nil { // Existing key
+		node.val = val
 		self.removeNode(node)
 		self.addNode(node)
 	} else { // New key

@@ -91,18 +91,27 @@ func TestRemoveNode(t *testing.T) {
 }
 
 func TestSet(t *testing.T) {
+	var v interface{}
+	var e error
+
 	assert := assert.New(t)
 
 	cache := New(3)
+	cache.Set("hoge", 11)
 	cache.Set("hoge", 111)
+
+	assert.Equal(int64(1), cache.CurrentSize())
+
+	v, e = cache.Get("hoge")
+
+	assert.Equal(nil, e)
+	assert.Equal(111, v)
+
 	cache.Set("fuga", 222)
 	cache.Set("fooo", 333)
 	cache.Set("baar", 444)
 
 	assert.Equal(int64(3), cache.CurrentSize())
-
-	var v interface{}
-	var e error
 
 	v, e = cache.Get("hoge")
 
