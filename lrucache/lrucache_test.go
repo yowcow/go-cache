@@ -42,14 +42,14 @@ func TestRemoveNode(t *testing.T) {
 	n4 := NewNode("baar", 444)
 
 	cache := New(4)
-	cache.addNode(n1)
-	cache.addNode(n2)
-	cache.addNode(n3)
-	cache.addNode(n4)
+	cache.addNode(n1) // hoge
+	cache.addNode(n2) // hoge -> fuga
+	cache.addNode(n3) // hoge -> fuga -> fooo
+	cache.addNode(n4) // hoge -> fuga -> fooo -> baar
 
 	assert.Equal(int64(4), cache.CurrentSize())
 
-	cache.removeNode(n2)
+	cache.removeNode(n2) // hoge -> fooo -> baar
 
 	assert.Equal(int64(3), cache.CurrentSize())
 
@@ -60,7 +60,7 @@ func TestRemoveNode(t *testing.T) {
 	assert.Equal(keys1[1], keys2[1])
 	assert.Equal(keys1[2], keys2[0])
 
-	cache.removeNode(n1)
+	cache.removeNode(n1) // fooo -> baar
 
 	assert.Equal(int64(2), cache.CurrentSize())
 
@@ -70,7 +70,7 @@ func TestRemoveNode(t *testing.T) {
 	assert.Equal(keys1[0], keys2[1])
 	assert.Equal(keys1[1], keys2[0])
 
-	cache.removeNode(n4)
+	cache.removeNode(n4) // fooo
 
 	assert.Equal(int64(1), cache.CurrentSize())
 
@@ -79,7 +79,7 @@ func TestRemoveNode(t *testing.T) {
 
 	assert.Equal(keys1[0], keys2[0])
 
-	cache.removeNode(n3)
+	cache.removeNode(n3) // empty!
 
 	assert.Equal(int64(0), cache.CurrentSize())
 
@@ -97,38 +97,38 @@ func TestSet(t *testing.T) {
 	assert := assert.New(t)
 
 	cache := New(3)
-	cache.Set("hoge", 11)
-	cache.Set("hoge", 111)
+	cache.Set("hoge", 11)  // hoge
+	cache.Set("hoge", 111) // hoge
 
 	assert.Equal(int64(1), cache.CurrentSize())
 
-	v, e = cache.Get("hoge")
+	v, e = cache.Get("hoge") // hoge
 
 	assert.Equal(nil, e)
 	assert.Equal(111, v)
 
-	cache.Set("fuga", 222)
-	cache.Set("fooo", 333)
-	cache.Set("baar", 444)
+	cache.Set("fuga", 222) // hoge -> fuga
+	cache.Set("fooo", 333) // hoge -> fuga -> fooo
+	cache.Set("baar", 444) // fuga -> fooo -> baar
 
 	assert.Equal(int64(3), cache.CurrentSize())
 
-	v, e = cache.Get("hoge")
+	v, e = cache.Get("hoge") // fuga -> fooo -> baar
 
 	assert.NotEqual(nil, e)
 	assert.Equal(nil, v)
 
-	v, e = cache.Get("fuga")
+	v, e = cache.Get("fuga") // fooo -> baar -> fuga
 
 	assert.Equal(nil, e)
 	assert.Equal(222, v)
 
-	v, e = cache.Get("fooo")
+	v, e = cache.Get("fooo") // baar -> fuga -> fooo
 
 	assert.Equal(nil, e)
 	assert.Equal(333, v)
 
-	v, e = cache.Get("baar")
+	v, e = cache.Get("baar") // fuga -> fooo -> baar
 
 	assert.Equal(nil, e)
 	assert.Equal(444, v)
@@ -138,36 +138,36 @@ func TestGet(t *testing.T) {
 	assert := assert.New(t)
 
 	cache := New(3)
-	cache.Set("hoge", 111)
-	cache.Set("fuga", 222)
-	cache.Set("fooo", 333)
+	cache.Set("hoge", 111) // hoge
+	cache.Set("fuga", 222) // hoge -> fuga
+	cache.Set("fooo", 333) // hoge -> fuga -> fooo
 
-	cache.Get("hoge") // "fuga" is the head now
-	cache.Get("fuga") // "fooo" is the head now
+	cache.Get("hoge") // fuga -> fooo -> hoge
+	cache.Get("fuga") // fooo -> hoge -> fuga
 
-	cache.Set("baar", 444) // "fooo" is deleted
+	cache.Set("baar", 444) // hoge -> fuga -> baar
 
 	assert.Equal(int64(3), cache.CurrentSize())
 
 	var v interface{}
 	var e error
 
-	v, e = cache.Get("fooo")
+	v, e = cache.Get("fooo") // hoge -> fuga -> baar
 
 	assert.Equal(nil, v)
 	assert.NotEqual(nil, e)
 
-	v, e = cache.Get("hoge")
+	v, e = cache.Get("hoge") // fuga -> baar -> hoge
 
 	assert.Equal(111, v)
 	assert.Equal(nil, e)
 
-	v, e = cache.Get("fuga")
+	v, e = cache.Get("fuga") // baar -> hoge -> fuga
 
 	assert.Equal(222, v)
 	assert.Equal(nil, e)
 
-	v, e = cache.Get("baar")
+	v, e = cache.Get("baar") // hoge -> fuga -> baar
 
 	assert.Equal(444, v)
 	assert.Equal(nil, e)
