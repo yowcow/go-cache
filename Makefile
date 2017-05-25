@@ -1,6 +1,8 @@
 .PHONY: test
 
 all:
+	go get github.com/mattn/gom
+	gom install
 
 test:
-	go test ./... -v
+	gom test ./lrucache -v

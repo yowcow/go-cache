@@ -1,0 +1,2 @@
+gom 'github.com/stretchr/testify', :commit => '4d4bfba8f1d1027c4fdbe371823030df51419987'
+gom 'github.com/yowcow/go-cache', :commit => '0cfa2fcb1ec998b28ca948c65c3066b79df4ff8d'

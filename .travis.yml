@@ -3,5 +3,8 @@ language: go
 go:
   - tip
 
+before_script:
+  - make
+
 script:
   - make test
