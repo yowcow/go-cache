@@ -55,9 +55,9 @@ func (self *FIFOCache) CurrentSize() int64 {
 
 func (self *FIFOCache) AllKeys() []string {
 	node := self.head
-	keys := []string{}
-	for node != nil {
-		keys = append(keys, node.key)
+	keys := make([]string, self.CurrentSize())
+	for i := 0; node != nil; i++ {
+		keys[i] = node.key
 		node = node.next
 	}
 	return keys
@@ -65,9 +65,9 @@ func (self *FIFOCache) AllKeys() []string {
 
 func (self *FIFOCache) AllKeysReversed() []string {
 	node := self.tail
-	keys := []string{}
-	for node != nil {
-		keys = append(keys, node.key)
+	keys := make([]string, self.CurrentSize())
+	for i := 0; node != nil; i++ {
+		keys[i] = node.key
 		node = node.prev
 	}
 	return keys

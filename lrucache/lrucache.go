@@ -55,22 +55,22 @@ func (self *LRUCache) CurrentSize() int64 {
 
 func (self *LRUCache) AllKeys() []string {
 	node := self.head
-	result := []string{}
-	for node != nil {
-		result = append(result, node.key)
+	keys := make([]string, self.CurrentSize())
+	for i := 0; node != nil; i++ {
+		keys[i] = node.key
 		node = node.next
 	}
-	return result
+	return keys
 }
 
 func (self *LRUCache) AllKeysReversed() []string {
 	node := self.tail
-	result := []string{}
-	for node != nil {
-		result = append(result, node.key)
+	keys := make([]string, self.CurrentSize())
+	for i := 0; node != nil; i++ {
+		keys[i] = node.key
 		node = node.prev
 	}
-	return result
+	return keys
 }
 
 func (self *LRUCache) Set(key string, val interface{}) error {
