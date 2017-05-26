@@ -3,6 +3,7 @@ package fifocache
 import (
 	"fmt"
 	"github.com/yowcow/go-cache/cache"
+	"sync"
 )
 
 type FIFOCacheNode struct {
@@ -18,6 +19,7 @@ type FIFOCache struct {
 	head        *FIFOCacheNode
 	tail        *FIFOCacheNode
 	keyMap      map[string]*FIFOCacheNode
+	mutex       *sync.Mutex
 }
 
 type FIFOCacher interface {
@@ -33,6 +35,7 @@ func New(maxSize int64) FIFOCacher {
 		head:        nil,
 		tail:        nil,
 		keyMap:      map[string]*FIFOCacheNode{},
+		mutex:       &sync.Mutex{},
 	}
 }
 
@@ -54,6 +57,9 @@ func (self *FIFOCache) CurrentSize() int64 {
 }
 
 func (self *FIFOCache) AllKeys() []string {
+	self.mutex.Lock()
+	defer self.mutex.Unlock()
+
 	node := self.head
 	keys := make([]string, self.CurrentSize())
 	for i := 0; node != nil; i++ {
@@ -64,6 +70,9 @@ func (self *FIFOCache) AllKeys() []string {
 }
 
 func (self *FIFOCache) AllKeysReversed() []string {
+	self.mutex.Lock()
+	defer self.mutex.Unlock()
+
 	node := self.tail
 	keys := make([]string, self.CurrentSize())
 	for i := 0; node != nil; i++ {
@@ -74,12 +83,16 @@ func (self *FIFOCache) AllKeysReversed() []string {
 }
 
 func (self *FIFOCache) Set(key string, val interface{}) error {
+	self.mutex.Lock()
+	defer self.mutex.Unlock()
+
 	if node := self.keyMap[key]; node != nil { // Existing key
 		node.val = val
 	} else { // New key
 		if self.CurrentSize() == self.MaxSize() {
 			head := self.head
-			self.Delete(head.key)
+			delete(self.keyMap, head.key)
+			self.removeNode(head)
 		}
 		node = NewNode(key, val)
 		self.addNode(node)
@@ -89,6 +102,9 @@ func (self *FIFOCache) Set(key string, val interface{}) error {
 }
 
 func (self *FIFOCache) Get(key string) (interface{}, error) {
+	self.mutex.Lock()
+	defer self.mutex.Unlock()
+
 	if node := self.keyMap[key]; node != nil {
 		return node.val, nil
 	}
@@ -96,6 +112,9 @@ func (self *FIFOCache) Get(key string) (interface{}, error) {
 }
 
 func (self *FIFOCache) Delete(key string) error {
+	self.mutex.Lock()
+	defer self.mutex.Unlock()
+
 	if node := self.keyMap[key]; node != nil {
 		self.removeNode(node)
 		delete(self.keyMap, key)

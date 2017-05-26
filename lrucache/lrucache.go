@@ -3,6 +3,7 @@ package lrucache
 import (
 	"fmt"
 	"github.com/yowcow/go-cache/cache"
+	"sync"
 )
 
 type LRUCacheNode struct {
@@ -18,6 +19,7 @@ type LRUCache struct {
 	head        *LRUCacheNode
 	tail        *LRUCacheNode
 	keyMap      map[string]*LRUCacheNode
+	mutex       *sync.Mutex
 }
 
 type LRUCacher interface {
@@ -33,6 +35,7 @@ func New(maxSize int64) LRUCacher {
 		head:        nil,
 		tail:        nil,
 		keyMap:      map[string]*LRUCacheNode{},
+		mutex:       &sync.Mutex{},
 	}
 }
 
@@ -54,6 +57,9 @@ func (self *LRUCache) CurrentSize() int64 {
 }
 
 func (self *LRUCache) AllKeys() []string {
+	self.mutex.Lock()
+	defer self.mutex.Unlock()
+
 	node := self.head
 	keys := make([]string, self.CurrentSize())
 	for i := 0; node != nil; i++ {
@@ -64,6 +70,9 @@ func (self *LRUCache) AllKeys() []string {
 }
 
 func (self *LRUCache) AllKeysReversed() []string {
+	self.mutex.Lock()
+	defer self.mutex.Unlock()
+
 	node := self.tail
 	keys := make([]string, self.CurrentSize())
 	for i := 0; node != nil; i++ {
@@ -74,6 +83,9 @@ func (self *LRUCache) AllKeysReversed() []string {
 }
 
 func (self *LRUCache) Set(key string, val interface{}) error {
+	self.mutex.Lock()
+	defer self.mutex.Unlock()
+
 	if node := self.keyMap[key]; node != nil { // Existing key
 		node.val = val
 		self.removeNode(node)
@@ -81,7 +93,8 @@ func (self *LRUCache) Set(key string, val interface{}) error {
 	} else { // New key
 		if self.CurrentSize() == self.MaxSize() {
 			head := self.head
-			self.Delete(head.key)
+			delete(self.keyMap, head.key)
+			self.removeNode(head)
 		}
 		node = NewNode(key, val)
 		self.addNode(node)
@@ -91,6 +104,9 @@ func (self *LRUCache) Set(key string, val interface{}) error {
 }
 
 func (self *LRUCache) Get(key string) (interface{}, error) {
+	self.mutex.Lock()
+	defer self.mutex.Unlock()
+
 	if node := self.keyMap[key]; node != nil {
 		if node != self.tail { // The node is not the tail
 			self.removeNode(node)
@@ -102,6 +118,9 @@ func (self *LRUCache) Get(key string) (interface{}, error) {
 }
 
 func (self *LRUCache) Delete(key string) error {
+	self.mutex.Lock()
+	defer self.mutex.Unlock()
+
 	if node := self.keyMap[key]; node != nil {
 		self.removeNode(node)
 		delete(self.keyMap, key)
