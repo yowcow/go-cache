@@ -4,9 +4,9 @@ all:
 	go get github.com/mattn/gom
 	gom install
 
-SUCCESS := \e[1;32m
-FAILURE := \e[1;31m
-RESET   := \e[m
+SUCCESS := \033[1;32m
+FAILURE := \033[1;31m
+RESET   := \033[m
 
 test:
 	gom test ./lrucache -v \
